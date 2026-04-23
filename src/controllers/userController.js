@@ -3,7 +3,6 @@ import userSchema from "../models/userSchema.js";
 export const userRegister = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const newUser = await userSchema.create({ username, email, password });
     const existing = await userSchema.findOne({ email });
     if (existing) {
       return res.status(401).json({
@@ -11,6 +10,7 @@ export const userRegister = async (req, res) => {
         message: "User already Registered",
       });
     }
+    const newUser = await userSchema.create({ username, email, password });
     res.status(201).json({
       success: true,
       message: "User registered successfully",
