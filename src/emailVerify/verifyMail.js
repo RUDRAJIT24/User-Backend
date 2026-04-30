@@ -15,8 +15,7 @@ export const verifyMail = async (token, email) => {
     from: process.env.email,
     to: email,
     subject: "Email Verification For Todo",
-    text: `VerifyMail/${token}`
-           
+    text: `http://localhost:6000/verify/${token}`        
   };
 
   transporter.sendMail(mailConfigurations, function (error, info) {
