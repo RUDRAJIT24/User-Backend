@@ -41,3 +41,60 @@ export const userRegister = async (req, res) => {
     });
   }
 };
+
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await userSchema.findOne({ email: email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized Access",
+      });
+    } else {
+      const passwordCheck = await bcrypt.compare(password, user.password);
+      if (!passwordCheck) {
+        return res.status(401).json({
+          success: false,
+          message: "Credentials Mismatch",
+        });
+      } else if (passwordCheck && user.isVerified === true) {
+        const accessToken = await jwt.sign(
+          { id: user._id },
+          process.env.SECRET_KEY,
+          {
+            expiresIn: "10d",
+          },
+        );
+        const refreshToken = await jwt.sign(
+          { id: user._id },
+          process.env.SECRET_KEY,
+          {
+            expiresIn: "30d",
+          },
+        );
+
+        user.isLoggedIn = true;
+        await user.save();
+        return res.status(200).json({
+          success: true,
+          message: "Logged In Succesfully",
+          accessToken:accessToken,
+          refreshToken:refreshToken,
+          data:user
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Please Verify first then login",
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
