@@ -42,9 +42,8 @@ export const updateTodo = async (req, res) => {
     const { title } = req.body;
     const todoId = req.params.id;
     const newTodo = await todoSchema.findByIdAndUpdate(
-      { _id: todoId },
-      { title },
-      { userId: req.userId },
+      { _id: todoId, userId: req.userId },
+      { title }
     );
     if (!newTodo) {
       return res.status(404).send({
