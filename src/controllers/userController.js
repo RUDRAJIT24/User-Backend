@@ -26,7 +26,7 @@ export const userRegister = async (req, res) => {
     }
 
     // const imageUrl = `${req.file.filename}`
-    const imageUrl = `http://localhost:6000/upload/${req.file.filename}`;
+    const imageUrl = `http://localhost:9000/upload/${req.file.filename}`;
     const existing = await userSchema.findOne({ email });
 
     if (existing) {
