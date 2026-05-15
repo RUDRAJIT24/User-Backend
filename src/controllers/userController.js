@@ -8,8 +8,27 @@ dotenv.config();
 
 export const userRegister = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { userName, email, password } = req.body;
+    console.log(req.file);
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No image uploaded",
+      });
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/svg"];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid file type",
+      });
+    }
+
+    // const imageUrl = `${req.file.filename}`
+    const imageUrl = `http://localhost:6000/upload/${req.file.filename}`;
     const existing = await userSchema.findOne({ email });
+
     if (existing) {
       return res.status(401).json({
         success: false,
@@ -18,9 +37,10 @@ export const userRegister = async (req, res) => {
     }
     const hashPassword = await bcrypt.hash(password, 10);
     const newUser = await userSchema.create({
-      username,
+      userName,
       email,
       password: hashPassword,
+      profilePic: imageUrl
     });
 
     const token = jwt.sign({ userId: newUser._id }, process.env.SECRET_KEY, {
@@ -43,7 +63,6 @@ export const userRegister = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,9 +80,8 @@ export const login = async (req, res) => {
           message: "Credentials Mismatch",
         });
       } else if (passwordCheck && user.isVerified === true) {
-
-        await sessionSchema.findOneAndDelete({userId:user._id})
-        await sessionSchema.create({userId:user._id})
+        await sessionSchema.findOneAndDelete({ userId: user._id });
+        await sessionSchema.create({ userId: user._id });
 
         const accessToken = await jwt.sign(
           { id: user._id },
@@ -85,9 +103,9 @@ export const login = async (req, res) => {
         return res.status(200).json({
           success: true,
           message: "Logged In Succesfully",
-          accessToken:accessToken,
-          refreshToken:refreshToken,
-          data:user
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          data: user,
         });
       } else {
         return res.status(400).json({
@@ -99,36 +117,34 @@ export const login = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
-
-export const logout = async(req , res)=>{
+export const logout = async (req, res) => {
   try {
-      const existing = await sessionSchema.findOne({userId:req.userId})
-      const user = await userSchema.findById({_id:req.userId})
+    const existing = await sessionSchema.findOne({ userId: req.userId });
+    const user = await userSchema.findById({ _id: req.userId });
 
-      if(existing){
-        await sessionSchema.findOneAndDelete({userId:req.userId})
-        user.isLoggedIn = false
-        await user.save()
-        return res.status(200).json({
-          success: true,
-          message: "Session Ended Succesfully"
-        })
-      }else{
-        return res.status(404).json({
-          success: false,
-          message:"No Session Found"
-        })
-      }
-
+    if (existing) {
+      await sessionSchema.findOneAndDelete({ userId: req.userId });
+      user.isLoggedIn = false;
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: "Session Ended Succesfully",
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "No Session Found",
+      });
+    }
   } catch (error) {
-     return res.send(500).json({
+    return res.send(500).json({
       success: false,
       message: error.message,
     });
   }
-}
+};

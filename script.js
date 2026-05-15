@@ -9,6 +9,7 @@ const app = express()
 const port = process.env.PORT
 
 app.use(express.json())
+app.use('/upload', express.static('upload'));
 app.use('/user', userRoute)
 app.use('/todo', todoRoute)
 
@@ -17,6 +18,7 @@ dbConnect()
 app.listen(port, ()=>{
     console.log(`Server running at port ${port}`);    
 })
+
 
 
 

@@ -36,14 +36,13 @@ export const getAllTodo = async (req, res) => {
   }
 };
 
-
 export const updateTodo = async (req, res) => {
   try {
     const { title } = req.body;
     const todoId = req.params.id;
     const newTodo = await todoSchema.findByIdAndUpdate(
       { _id: todoId, userId: req.userId },
-      { title }
+      { title },
     );
     if (!newTodo) {
       return res.status(404).send({
@@ -54,7 +53,7 @@ export const updateTodo = async (req, res) => {
       return res.status(200).send({
         success: true,
         message: "Todo updated successfully",
-        data:newTodo
+        data: newTodo,
       });
     }
   } catch (error) {
@@ -64,7 +63,6 @@ export const updateTodo = async (req, res) => {
     });
   }
 };
-
 
 export const deleteTodo = async (req, res) => {
   try {
@@ -92,7 +90,6 @@ export const deleteTodo = async (req, res) => {
   }
 };
 
-
 export const paginateTodo = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Default to page 1
@@ -115,8 +112,9 @@ export const paginateTodo = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
+
 
